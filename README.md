@@ -1,4 +1,5 @@
 # 성경 구절 추천 앱
+## <img width = "80%" src="https://github.com/buskingsue/bible_recommend/blob/master/recom_bible.png">
 ## <img width = "80%" src="https://github.com/buskingsue/bible_recommend/blob/master/bible.png">
 
 ##
