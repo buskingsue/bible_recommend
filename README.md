@@ -5,4 +5,4 @@
 ## python version 3.10.11
 ## run 폴더 app.py 파일
 ## bash 창에서 streamlit run app.py 실행
-
+## thanks
