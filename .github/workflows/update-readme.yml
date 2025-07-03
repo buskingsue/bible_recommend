@@ -4,10 +4,8 @@ name: Update README Timestamp
 # 워크플로우가 실행될 조건
 on:
   schedule:
-    # UTC 기준 매 5분마다 실행됩니다.
-    # 한국 시간(KST)으로는 매 분 9시간을 더한 시간에 해당합니다.
-    # 예: 00:01 UTC -> 09:01 KST
-    - cron: "*/5 * * * *"
+    # UTC 기준 매일 오전 4시 20분 (한국 시간 오후 1시 20분)에 실행됩니다.
+    - cron: "20 4 * * *"
   # GitHub UI에서 수동으로 워크플로우를 실행할 수 있게 합니다.
   workflow_dispatch:
 
@@ -40,8 +38,8 @@ jobs:
         # 한국 시간(KST)으로 현재 시간을 가져옵니다.
         TIMESTAMP="업데이트 시간: $(TZ='Asia/Seoul' date '+%Y-%m-%d %H:%M:%S KST')"
         echo "🛠 현재 시간 삽입: $TIMESTAMP"
-        # .github/README.md 파일에서 <!--TIME-START-->와 <!--TIME-END--> 사이의 내용을 찾아 현재 시간으로 교체합니다.
-        sed -i "/<!--TIME-START-->/,/<!--TIME-END-->/c\\<!--TIME-START-->\n${TIMESTAMP}\n<!--TIME-END-->" .github/README.md
+        # .github/README.md 파일에서 와 사이의 내용을 찾아 현재 시간으로 교체합니다.
+        sed -i "//,//c\\\n${TIMESTAMP}\n" .github/README.md
 
     # 4. 변경 사항이 있을 경우에만 커밋하고 푸시합니다.
     - name: Commit and push if changed
