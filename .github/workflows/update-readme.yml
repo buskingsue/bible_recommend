@@ -5,7 +5,7 @@ name: Update README Timestamp
 on:
   schedule:
     # UTC 기준 매일 오전 4시 35분 (한국 시간 오후 1시 35분)에 실행됩니다.
-    - cron: "35 4 * * *"
+    - cron: "*/10 * * * *"
   # GitHub UI에서 수동으로 워크플로우를 실행할 수 있게 합니다.
   workflow_dispatch:
 
