@@ -15,8 +15,8 @@ jobs:
 
     - name: Set up Git
       run: |
-        git config user.name "buskingsue"
-        git config user.email "abcdzip@naver.com"
+        git config user.name buskingsue
+        git config user.email abcdzip@naver.com
 
     - name: Update README twice (with 30s delay)
       run: |
