@@ -1,9 +1,12 @@
-name: Update README Every Minute
+name: Update README Timestamp
 
 on:
   schedule:
-    - cron: "*/1 * * * *"  # 매 1분마다 실행 (UTC 기준)
-  workflow_dispatch:        # 수동 실행도 가능하게
+    - cron: "*/1 * * * *"  # 매 1분마다 (UTC 기준)
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   update-readme:
@@ -11,21 +14,25 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Git
       run: |
-        git config user.name buskingsue
-        git config user.email abcdzip@naver.com
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
 
-    - name: Update README twice (with 30s delay)
+    - name: Update timestamp in README.md
       run: |
-        echo "업데이트 시간 1회: $(date -u)" >> README.md
-        sleep 30
-        echo "업데이트 시간 2회: $(date -u)" >> README.md
+        TIMESTAMP="업데이트 시간: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+        echo "🛠 현재 시간 삽입: $TIMESTAMP"
+        sed -i "/<!--TIME-START-->/,/<!--TIME-END-->/c\\<!--TIME-START-->\\n$TIMESTAMP\\n<!--TIME-END-->" README.md
 
-    - name: Commit and push changes
+    - name: Commit and push if changed
       run: |
-        git add README.md
-        git commit -m "🕒 README 자동 업데이트: $(date -u)" || echo "No changes to commit"
-        git push
+        if git diff --quiet; then
+          echo "🔁 변경 사항 없음. 커밋 생략"
+        else
+          git add README.md
+          git commit -m "🕒 README 업데이트: $(date -u)"
+          git push
+        fi
