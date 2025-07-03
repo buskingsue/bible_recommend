@@ -2,8 +2,8 @@ name: Update README Timestamp
 
 on:
   schedule:
-    - cron: "*/1 * * * *"  # 매 1분마다 (UTC 기준)
-  workflow_dispatch:
+    - cron: "*/1 * * * *"  # 매 1분마다 실행 (UTC 기준)
+  workflow_dispatch:       # 수동 실행도 가능하게
 
 permissions:
   contents: write
@@ -34,5 +34,5 @@ jobs:
         else
           git add README.md
           git commit -m "🕒 README 업데이트: $(date -u)"
-          git push
+          git push origin HEAD:master  # 🎯 master 브랜치로 푸시
         fi
