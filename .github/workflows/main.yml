@@ -1,0 +1,58 @@
+# 워크플로우의 이름
+name: Update README Timestamp
+
+# 워크플로우가 실행될 조건
+on:
+  schedule:
+    # UTC 기준 매 1분마다 실행됩니다.
+    # 한국 시간(KST)으로는 매 분 9시간을 더한 시간에 해당합니다.
+    # 예: 00:01 UTC -> 09:01 KST
+    - cron: "*/1 * * * *"
+  # GitHub UI에서 수동으로 워크플로우를 실행할 수 있게 합니다.
+  workflow_dispatch:
+
+# 워크플로우가 파일에 쓰기 작업을 할 수 있도록 권한을 설정합니다.
+permissions:
+  contents: write
+
+# 실행될 작업들을 정의합니다.
+jobs:
+  update-readme:
+    # 작업이 실행될 가상 환경을 지정합니다.
+    runs-on: ubuntu-latest
+
+    # 작업의 단계들을 정의합니다.
+    steps:
+    # 1. 리포지토리의 코드를 가상 환경으로 가져옵니다. (Checkout)
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # 2. 커밋과 푸시를 위해 Git 설정을 합니다.
+    #    봇의 이름으로 커밋 기록이 남게 됩니다.
+    - name: Set up Git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    # 3. README.md 파일의 타임스탬프를 업데이트합니다.
+    - name: Update timestamp in README.md
+      run: |
+        # 한국 시간(KST)으로 현재 시간을 가져옵니다.
+        TIMESTAMP="업데이트 시간: $(TZ='Asia/Seoul' date '+%Y-%m-%d %H:%M:%S KST')"
+        echo "🛠 현재 시간 삽입: $TIMESTAMP"
+        # README.md 파일에서 <!--TIME-START-->와 <!--TIME-END--> 사이의 내용을 찾아 현재 시간으로 교체합니다.
+        sed -i "/<!--TIME-START-->/,/<!--TIME-END-->/c\\<!--TIME-START-->\n${TIMESTAMP}\n<!--TIME-END-->" README.md
+
+    # 4. 변경 사항이 있을 경우에만 커밋하고 푸시합니다.
+    - name: Commit and push if changed
+      run: |
+        # git diff --quiet는 변경 사항이 없으면 0을 반환합니다.
+        if git diff --quiet; then
+          echo "🔁 변경 사항 없음. 커밋 생략"
+        else
+          git add README.md
+          git commit -m "🕒 README 타임스탬프 업데이트"
+          # 기본 브랜치(예: main 또는 master)로 푸시합니다.
+          # 자신의 리포지토리 기본 브랜치 이름에 맞게 'main' 또는 'master'로 수정하세요.
+          git push origin HEAD:master
+        fi
