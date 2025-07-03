@@ -54,5 +54,5 @@ jobs:
           git commit -m "🕒 README 타임스탬프 업데이트"
           # 기본 브랜치(예: main 또는 master)로 푸시합니다.
           # 자신의 리포지토리 기본 브랜치 이름에 맞게 'main' 또는 'master'로 수정하세요.
-          git push origin HEAD:main
+          git push origin HEAD:master
         fi
