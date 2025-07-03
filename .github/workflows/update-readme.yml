@@ -1,0 +1,31 @@
+name: Update README Every Minute
+
+on:
+  schedule:
+    - cron: "*/1 * * * *"  # 매 1분마다 실행 (UTC 기준)
+  workflow_dispatch:        # 수동 실행도 가능하게
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+    - name: Update README twice (with 30s delay)
+      run: |
+        echo "업데이트 시간 1회: $(date -u)" >> README.md
+        sleep 30
+        echo "업데이트 시간 2회: $(date -u)" >> README.md
+
+    - name: Commit and push changes
+      run: |
+        git add README.md
+        git commit -m "🕒 README 자동 업데이트: $(date -u)" || echo "No changes to commit"
+        git push
