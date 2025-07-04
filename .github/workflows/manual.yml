@@ -1,32 +1,73 @@
-# This is a basic workflow that is manually triggered
+# 워크플로우의 이름
+name: README 타임스탬프 업데이트
 
-name: Manual workflow
-
-# Controls when the action will run. Workflow runs when manually triggered using the UI
-# or API.
+# 워크플로우가 실행될 조건
 on:
+  schedule:
+    # UTC 기준 6분 마다 반복 실행
+    - cron: "*/6 * * * *"
+  # GitHub UI에서 수동으로 워크플로우를 실행할 수 있게 합니다.
   workflow_dispatch:
-    # Inputs the workflow accepts.
-    inputs:
-      name:
-        # Friendly description to be shown in the UI instead of 'name'
-        description: 'Person to greet'
-        # Default value if no value is explicitly provided
-        default: 'World'
-        # Input has to be provided for the workflow to run
-        required: true
-        # The data type of the input
-        type: string
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# 워크플로우가 파일에 쓰기 작업을 할 수 있도록 권한을 설정합니다.
+permissions:
+  contents: write
+
+# 실행될 작업들을 정의합니다.
 jobs:
-  # This workflow contains a single job called "greet"
-  greet:
-    # The type of runner that the job will run on
+  update-readme:
+    # 작업이 실행될 가상 환경을 지정합니다.
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    # 작업의 단계들을 정의합니다.
     steps:
-    # Runs a single command using the runners shell
-    - name: Send greeting
-      run: echo "Hello ${{ inputs.name }}"
+    # 1. 리포지토리의 코드를 가상 환경으로 가져옵니다. (Checkout)
+    - name: 리포지토리 체크아웃
+      uses: actions/checkout@v4
+
+    # 2. 커밋과 푸시를 위해 Git 설정을 합니다.
+    - name: Git 설정
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    # 3. README.md 파일의 타임스탬프를 업데이트합니다.
+    - name: README.md 타임스탬프 업데이트
+      run: |
+        # 한국 시간(KST)으로 현재 시간을 가져옵니다.
+        # 예시: "2025-07-04 10:50:00 KST"
+        TIMESTAMP="업데이트 시간: $(TZ='Asia/Seoul' date '+%Y-%m-%d %H:%M:%S KST')"
+        echo "🛠 현재 시간 삽입: $TIMESTAMP"
+        
+        # .github/README.md 파일에서 마커 사이의 내용을 찾아 현재 시간으로 교체합니다.
+        # 실제 README.md 파일에 이 마커들이 존재해야 합니다.
+        # 예시:
+        # <!-- START_UPDATED_TIME -->
+        # 이곳에 타임스탬프가 들어갑니다.
+        # <!-- END_UPDATED_TIME -->
+        START_MARKER="<!-- START_UPDATED_TIME -->"
+        END_MARKER="<!-- END_UPDATED_TIME -->"
+        
+        # sed 명령어를 사용하여 마커 사이의 내용을 교체합니다.
+        # 'c\'는 여러 줄을 대체할 때 사용하며, 각 줄 끝에 '\'를 붙여야 합니다.
+        sed -i "/${START_MARKER}/,/${END_MARKER}/c\\
+${START_MARKER}\\
+${TIMESTAMP}\\
+${END_MARKER}" .github/README.md
+
+    # 4. 변경 사항이 있을 경우에만 커밋하고 푸시합니다.
+    - name: 변경 사항 커밋 및 푸시
+      run: |
+        # git status --porcelain는 변경 사항이 있으면 파일 목록을 출력하고, 없으면 아무것도 출력하지 않습니다.
+        if [[ -z $(git status --porcelain .github/README.md) ]]; then # 특정 파일만 확인하도록 수정
+          echo "🔁 변경 사항 없음. 커밋 생략"
+        else
+          git add .github/README.md
+          git commit -m "🕒 README 타임스탬프 업데이트"
+          # 푸시하기 전에 원격 저장소의 최신 변경 사항을 가져와 리베이스합니다.
+          # 이렇게 하면 로컬 브랜치가 원격 브랜치와 동기화되어 푸시 거부를 방지합니다.
+          # 리포지토리의 기본 브랜치 이름에 맞게 'master' 또는 'main'으로 수정하세요.
+          # 대부분의 경우 'main' 브랜치를 사용합니다.
+          git pull --rebase origin master
+          git push origin HEAD:master
+        fi
