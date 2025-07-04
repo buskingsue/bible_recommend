@@ -1,4 +1,3 @@
-# 결국 유료 버전 액션을 사용할때 시간이 업데이트 됨
-<!--TIME-START-->
-업데이트 시간: 2025-07-04 10:55:58 KST
-<!--TIME-END-->
+<!-- START_UPDATED_TIME -->
+time?
+<!-- END_UPDATED_TIME -->
