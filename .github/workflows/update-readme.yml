@@ -4,18 +4,8 @@ name: Update README Timestamp
 # 워크플로우가 실행될 조건
 on:
   schedule:
-    # 예시 1st
-    # UTC 기준 매일 오전 4시 48분에 실행됩니다.
-    # 한국 시간(KST)으로는 오후 1시 48분 (UTC + 9시간)에 해당합니다.
-    ##
-    # 현재코드 6분 마다 반복 실행 하고 싶음
+    # UTC 기준 6분 마다 반복 실행
     - cron: "*/6 * * * *"
-## 크론 수정 */ 반복
-## 첫번째 별 분(min)
-## 두번째 별 시(hour)
-## 세번째 별 일(day)
-## 네번째 별 월(month)
-## 다섯째 별 연도(year)
   # GitHub UI에서 수동으로 워크플로우를 실행할 수 있게 합니다.
   workflow_dispatch:
 
@@ -36,32 +26,32 @@ jobs:
       uses: actions/checkout@v4
 
     # 2. 커밋과 푸시를 위해 Git 설정을 합니다.
-    #    봇의 이름으로 커밋 기록이 남게 됩니다.
     - name: Set up Git
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
 
-    # 3. README.md 파일의 타임스탬프를 업데이트합니다.
+    # 3. README.md 파일의 타임스탬프를 업데이트합니다. (수정된 부분)
     - name: Update timestamp in README.md
       run: |
         # 한국 시간(KST)으로 현재 시간을 가져옵니다.
         TIMESTAMP="업데이트 시간: $(TZ='Asia/Seoul' date '+%Y-%m-%d %H:%M:%S KST')"
         echo "🛠 현재 시간 삽입: $TIMESTAMP"
-        # .github/README.md 파일에서 와 사이의 내용을 찾아 현재 시간으로 교체합니다.
-        # sed 오류를 해결하기 위해 시작/끝 마커를 정확히 지정했습니다.
-        sed -i "//,//c\\\n${TIMESTAMP}\n" .github/README.md
+        
+        # .github/README.md 파일에서 마커 사이의 내용을 찾아 현재 시간으로 교체합니다.
+        START_MARKER=""
+        END_MARKER=""
+        sed -i "/${START_MARKER}/,/${END_MARKER}/c/${START_MARKER}\n${TIMESTAMP}\n${END_MARKER}/" .github/README.md
 
     # 4. 변경 사항이 있을 경우에만 커밋하고 푸시합니다.
     - name: Commit and push if changed
       run: |
-        # git diff --quiet는 변경 사항이 없으면 0을 반환합니다.
-        if git diff --quiet; then
+        # git status --porcelain는 변경 사항이 있으면 파일 목록을 출력하고, 없으면 아무것도 출력하지 않습니다.
+        if [[ -z $(git status --porcelain) ]]; then
           echo "🔁 변경 사항 없음. 커밋 생략"
         else
           git add .github/README.md
           git commit -m "🕒 README 타임스탬프 업데이트"
-          # 기본 브랜치(예: main 또는 master)로 푸시합니다.
-          # 자신의 리포지토리 기본 브랜치 이름에 맞게 'main' 또는 'master'로 수정하세요.
+          # 리포지토리의 기본 브랜치 이름에 맞게 'master' 또는 'main'으로 수정하세요.
           git push origin HEAD:master
         fi
