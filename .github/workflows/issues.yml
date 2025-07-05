@@ -1,0 +1,31 @@
+name: 자동 이슈 생성
+
+# 워크플로우 실행 조건 설정
+on:
+  schedule:
+    # 6분마다 실행 (UTC 기준, 한국 시간은 +9시간)
+    - cron: "*/6 * * * *"
+  # 수동 실행도 가능하도록 설정
+  workflow_dispatch:
+
+# GitHub 액션이 레포지토리 이슈에 접근할 수 있도록 권한 부여
+permissions:
+  issues: write
+
+jobs:
+  make-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 자동 이슈 생성
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const now = new Date().toLocaleString("ko-KR", {
+              timeZone: "Asia/Seoul"
+            });
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `안녕하세요 - ${now}`,
+              body: `이슈가 자동으로 생성되었습니다.\n\n⏰ 생성 시간 (KST): ${now}`,
+            });
